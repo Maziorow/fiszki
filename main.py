@@ -1,14 +1,18 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import messagebox as mb
 from ctypes import windll
 import pandas as pd
 import random
 from dataclasses import dataclass
+from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl import load_workbook
 from sys import exit
 
 db = 'baza_slowek_polsko_angielskie.xlsx'
 
+difficulty_list = ["łatwy","średni","trudne"]
 
 @dataclass
 class Word:
@@ -37,7 +41,8 @@ class Logic():
             self.current_word = None
             return True
 
-
+logic = Logic()
+text = logic.randNewWord()
 
 
 class SampleApp(tk.Tk):
@@ -57,7 +62,7 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, PageOne):
+        for F in (StartPage, PageOne, AddWordPage):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -102,12 +107,14 @@ class StartPage(tk.Frame):
                             command=lambda: controller.show_frame("PageOne"))
         button1.pack()
 
+        button2 = tk.Button(self, text="Dodaj słowo",
+                            command=lambda: controller.show_frame("AddWordPage"))
+        button2.pack()
+
 class PageOne(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        logic = Logic()
-        text = logic.randNewWord()
         self.controller = controller
         button = tk.Button(self, text="Powrót do głównego menu",
                            command=lambda: controller.show_frame("StartPage"))
@@ -142,7 +149,50 @@ class PageOne(tk.Frame):
             T2.delete(1.0, 'end')
             T2.insert(tk.END,'')
 
+class AddWordPage(tk.Frame):
 
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        button = tk.Button(self, text="Powrót do głównego menu",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack()
+
+        polish_word = tk.Text(self, height=1, width=30)
+        polish_word.insert(tk.END, '')
+        polish_word.place(x=100, y=378)
+
+        english_word = tk.Text(self, height=1, width=30)
+        english_word.insert(tk.END, '')
+        english_word.place(x=400, y=378)
+
+        difficulty_choice = ttk.Combobox(self,height=1,values=difficulty_list)
+        difficulty_choice['state'] = 'readonly'
+        difficulty_choice.insert(tk.END,'')
+        difficulty_choice.place(x=700,y=378)
+
+        add_word = tk.Button(self, text="Dodaj słowo", width=30, command=lambda: add_word(polish_word,english_word,difficulty_choice))
+        add_word.place(x=400, y=460)
+
+        def add_word(pl,en,diff): #TODO: popraw kolejność dodawania słów po polsku i po angielsku
+            if pl.get('1.0','end-1c') and en.get('1.0','end-1c') and diff.get():
+                try:
+                    new_word = pd.DataFrame([{'english':en.get('1.0','end-1c'), 'polish':pl.get('1.0','end-1c'), 'difficulty':diff.get()}])
+                    wb = load_workbook(filename = "baza_slowek_polsko_angielskie.xlsx")
+                    ws = wb["Arkusz1"]
+                    for r in dataframe_to_rows(new_word, index=False, header=False):
+                        ws.append(r)
+                    wb.save("baza_slowek_polsko_angielskie.xlsx")
+                    mb.showwarning("Informacja", "Poprawnie dodano nowe słowo!")
+                    pl.delete(1.0, 'end')
+                    pl.insert(tk.END,"")
+                    en.delete(1.0, 'end')
+                    en.insert(tk.END,"")
+                    diff.set('')
+                except:
+                    mb.showerror("Informacja", "Błąd")
+            else:
+                mb.showerror("Informacja", "Błąd w wprowadzaniu danych!")
 
 
 if __name__ == "__main__":
