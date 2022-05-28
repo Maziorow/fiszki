@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkfont
 from tkinter import messagebox as mb
+import customtkinter as ctk ##Wigdet Text is not implemented here, use tk.Text instead
 from ctypes import windll
 import pandas as pd
 import random
@@ -45,10 +46,10 @@ logic = Logic()
 text = logic.randNewWord()
 
 
-class SampleApp(tk.Tk):
+class SampleApp(ctk.CTk):
 
     def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+        ctk.CTk.__init__(self, *args, **kwargs)
         windll.shcore.SetProcessDpiAwareness(1)
 
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
@@ -56,7 +57,7 @@ class SampleApp(tk.Tk):
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
         # will be raised above the others
-        container = tk.Frame(self)
+        container = ctk.CTkFrame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -80,10 +81,10 @@ class SampleApp(tk.Tk):
         frame.tkraise()
 
 
-class StartPage(tk.Frame):
+class StartPage(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
 
 
@@ -100,94 +101,95 @@ class StartPage(tk.Frame):
         center_y = int(screen_height / 2 - window_height / 2)
         controller.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-        label = tk.Label(self, text="Fiszki polsko-angielskie", font=controller.title_font)
+        label = ctk.CTkLabel(self, text="Fiszki polsko-angielskie")
         label.pack(side="top", fill="x", pady=10)
 
-        button1 = tk.Button(self, text="Do fiszek",
+        button1 = ctk.CTkButton(self, text="Do fiszek",
                             command=lambda: controller.show_frame("PageOne"))
         button1.pack()
 
-        button2 = tk.Button(self, text="Dodaj słowo",
+        button2 = ctk.CTkButton(self, text="Dodaj słowo",
                             command=lambda: controller.show_frame("AddWordPage"))
         button2.pack()
 
-class PageOne(tk.Frame):
+class PageOne(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        button = tk.Button(self, text="Powrót do głównego menu",
+        button = ctk.CTkButton(self, text="Powrót do głównego menu",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
 
-        T1 = tk.Text(self, height=1, width=30)
-        T1.tag_configure("center", justify='center')
-        T1.insert(tk.END, text)
-        T1.tag_add("center", "1.0", "end")
+        T1 = ctk.CTkEntry(self, height=1, width=200)
+        T1.insert(ctk.END, text)
         T1.config(state='disable')
         T1.place(x=50,y=378)
 
-        T2 = tk.Text(self, height=1, width=30)
-        T2.insert(tk.END,'')
+        T2 = ctk.CTkEntry(self, height=1, width=200)
         T2.place(x=800, y=378)
 
-        button2 = tk.Button(self, text="Sprawdź odpowiedź", width=30, command=lambda: action(T1, T2))
+        button2 = ctk.CTkButton(self, text="Sprawdź odpowiedź", width=25, command=lambda: action(T1, T2))
         button2.place(x=500, y=450)
 
 
         def action(t1, t2):
-            ans = logic.checkAnswer(T2.get('1.0','end-1c'))
+            ans = logic.checkAnswer(T2.get())
             text = logic.randNewWord()
             if ans:
                 mb.showwarning("Odpowiedź", "To poprawna odpowiedź!")
             else:
                 mb.showerror("Odpowiedź", "Niestety, jest to niepoprawna odpowiedź!")
             T1.config(state='normal')
-            T1.delete(1.0, 'end')
-            T1.insert(tk.END, text)
+            T1.delete("0","end")
+            T1.insert(ctk.END, text)
             T1.config(state='disable')
-            T2.delete(1.0, 'end')
-            T2.insert(tk.END,'')
+            T2.delete("0","end")
+            T2.insert(ctk.END,'')
 
-class AddWordPage(tk.Frame):
+class AddWordPage(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        button = tk.Button(self, text="Powrót do głównego menu",
+        button = ctk.CTkButton(self, text="Powrót do głównego menu",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
 
-        polish_word = tk.Text(self, height=1, width=30)
-        polish_word.insert(tk.END, '')
+        label_polish = ctk.CTkLabel(self,text="Słowo po polsku", height=1, width=30)
+        label_polish.place(x=100, y=328)
+        polish_word = ctk.CTkEntry(self, height=1, width=200)
         polish_word.place(x=100, y=378)
 
-        english_word = tk.Text(self, height=1, width=30)
-        english_word.insert(tk.END, '')
+        label_english = ctk.CTkLabel(self, text="Słowo po angielsku",height=1, width=25)
+        label_english.place(x=400, y=328)
+        english_word = ctk.CTkEntry(self, height=1, width=200)
         english_word.place(x=400, y=378)
 
-        difficulty_choice = ttk.Combobox(self,height=1,values=difficulty_list)
+        label_difficulty = ctk.CTkLabel(self, text="Poziom trudności", height=1, width=25)
+        label_difficulty.place(x=700, y=328)
+        difficulty_choice = ttk.Combobox(self,height=1,width=25,values=difficulty_list)
         difficulty_choice['state'] = 'readonly'
-        difficulty_choice.insert(tk.END,'')
+        difficulty_choice.insert(ctk.END,'')
         difficulty_choice.place(x=700,y=378)
 
-        add_word = tk.Button(self, text="Dodaj słowo", width=30, command=lambda: add_word(polish_word,english_word,difficulty_choice))
+        add_word = ctk.CTkButton(self, text="Dodaj słowo", corner_radius=6, width=25, command=lambda: add_word(polish_word,english_word,difficulty_choice))
         add_word.place(x=400, y=460)
 
-        def add_word(pl,en,diff): #TODO: popraw kolejność dodawania słów po polsku i po angielsku
+        def add_word(pl,en,diff):
             if pl.get('1.0','end-1c') and en.get('1.0','end-1c') and diff.get():
                 try:
-                    new_word = pd.DataFrame([{'english':en.get('1.0','end-1c'), 'polish':pl.get('1.0','end-1c'), 'difficulty':diff.get()}])
+                    new_word = pd.DataFrame([{'polish':pl.get('1.0','end-1c'), 'english':en.get('1.0','end-1c'), 'difficulty':diff.get()}])
                     wb = load_workbook(filename = "baza_slowek_polsko_angielskie.xlsx")
                     ws = wb["Arkusz1"]
                     for r in dataframe_to_rows(new_word, index=False, header=False):
                         ws.append(r)
                     wb.save("baza_slowek_polsko_angielskie.xlsx")
                     mb.showwarning("Informacja", "Poprawnie dodano nowe słowo!")
-                    pl.delete(1.0, 'end')
-                    pl.insert(tk.END,"")
-                    en.delete(1.0, 'end')
-                    en.insert(tk.END,"")
+                    pl.delete("0", 'end')
+                    pl.insert(ctk.END,"")
+                    en.delete("0", 'end')
+                    en.insert(ctk.END,"")
                     diff.set('')
                 except:
                     mb.showerror("Informacja", "Błąd")
