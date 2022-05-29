@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl import load_workbook
 from sys import exit
+import time
 
 db = 'baza_slowek_polsko_angielskie.xlsx'
 
@@ -29,6 +30,9 @@ class Logic():
         self.number_of_guessed = 0
         self.number_of_mistakes = 0
         self.words_base = pd.read_excel(db)
+        self.start_time = None
+        self.end_time = None
+        self.time_elapsed = None
     def newBase(self, diff=None):
         if diff == None:
             for index, row in self.words_base.iterrows():
@@ -64,7 +68,17 @@ class Logic():
             return "ERROR"
     def getCounter(self):
         return str(self.number_of_guessed)+"/"+str(self.number_of_words)
-
+    def startTimer(self):
+        self.start_time = time.time()
+    def stopTimer(self):
+        self.end_time = time.time()
+    def showTime(self):
+        sec = self.end_time - self.start_time
+        mins = sec // 60
+        sec = sec % 60
+        hours = mins // 60
+        mins = mins % 60
+        print("{0}:{1}:{2}".format(int(hours),int(mins),sec))
 
 
 class SampleApp(ctk.CTk):
@@ -165,6 +179,7 @@ class StartPage(ctk.CTkFrame):
             app.frames["PageOne"].T1.insert(ctk.END, logic.getCurrentWord())
             app.frames["PageOne"].T1.config(state='disable')
             app.frames["PageOne"].counter.config(text=logic.getCounter())
+            logic.startTimer()
             app.show_frame("PageOne")
 
 logic = Logic()
@@ -210,6 +225,8 @@ class PageOne(ctk.CTkFrame):
             updateEntries(T1,counter)
 
         def close_window():
+            logic.stopTimer()
+            print(logic.showTime())
             controller.show_frame("StartPage")
             self.update()
             logic.clearAnswers()
