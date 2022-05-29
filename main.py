@@ -12,7 +12,8 @@ from openpyxl import load_workbook
 from sys import exit
 import time
 
-db = 'baza_slowek_polsko_angielskie.xlsx'
+#db = 'baza_slowek_polsko_angielskie.xlsx'
+db = 'jd.xlsx'
 
 difficulty_list = ["łatwy","średni","trudne"]
 
@@ -33,6 +34,7 @@ class Logic():
         self.start_time = None
         self.end_time = None
         self.time_elapsed = None
+        self.learn_mode = None
     def newBase(self, diff=None):
         if diff == None:
             for index, row in self.words_base.iterrows():
@@ -55,6 +57,9 @@ class Logic():
     def checkAnswer(self, input):
         if(self.formatted_base[self.current_word].polish != input):
             self.current_word = 0
+            if(self.learn_mode):
+                self.formatted_base.pop(self.current_word)
+                self.number_of_guessed += 1
             return False
         else:
             self.formatted_base.pop(self.current_word)
@@ -75,10 +80,8 @@ class Logic():
     def showTime(self):
         sec = self.end_time - self.start_time
         mins = sec // 60
-        sec = sec % 60
-        hours = mins // 60
-        mins = mins % 60
-        print("{0}:{1}:{2}".format(int(hours),int(mins),sec))
+        sec = round(sec % 60, 2)
+        return ("{0}:{1}".format(int(mins),sec))
 
 
 class SampleApp(ctk.CTk):
@@ -114,11 +117,6 @@ class SampleApp(ctk.CTk):
         '''Show a frame for the given page name'''
         frame = self.frames[page_name]
         frame.tkraise()
-    def update_frame(self, page_name):
-        frame = self.frames[page_name]
-        frame.update()
-    def get_frame(self, page_name):
-        return self.frames[page_name]
 
 class StartPage(ctk.CTkFrame):
 
@@ -156,24 +154,27 @@ class StartPage(ctk.CTkFrame):
         button3.pack()
 
         def createToplevel():
-            window = ctk.CTkToplevel(self)
-            window.geometry("400x200")
-            window.title("Wybierz poziom trudności")
+            self.window = ctk.CTkToplevel(self)
+            self.window.grab_set()
+            self.window.geometry("400x200")
+            self.window.title("Wybierz poziom trudności")
 
-            button_easy = ctk.CTkButton(window,text="Łatwy",command=lambda: closeToplevel("łatwy"))
+            button_easy = ctk.CTkButton(self.window,text="Łatwy",command=lambda: closeToplevel("łatwy",False))
             button_easy.place(x=10,y=150)
-            button_medium = ctk.CTkButton(window,text="Średni",command=lambda: closeToplevel("średni"))
+            button_medium = ctk.CTkButton(self.window,text="Średni",command=lambda: closeToplevel("średni",False))
             button_medium.place(x=135, y=150)
-            button_hard = ctk.CTkButton(window,text="Trudny",command=lambda: closeToplevel("trudne"))
+            button_hard = ctk.CTkButton(self.window,text="Trudny",command=lambda: closeToplevel("trudne",False))
             button_hard.place(x=260, y=150)
 
-            def closeToplevel(diff):
-                chooseDifficulty(diff)
-                window.destroy()
+            def closeToplevel(diff,learn_mode):
+                chooseDifficulty(diff,learn_mode)
+                self.window.destroy()
 
-        def chooseDifficulty(diff=None):
+
+        def chooseDifficulty(diff=None,learn_mode=True):
             logic.newBase(diff)
             logic.randNewWord()
+            logic.learn_mode = learn_mode
             app.frames["PageOne"].T1.config(state='normal')
             app.frames["PageOne"].T1.delete("0", "end")
             app.frames["PageOne"].T1.insert(ctk.END, logic.getCurrentWord())
@@ -216,17 +217,79 @@ class PageOne(ctk.CTkFrame):
             counter.config(text=logic.getCounter())
 
         def checkAnswer(T1,counter):
+            word_index = logic.current_word
+            print(word_index)
             ans = logic.checkAnswer(T2.get())
-            logic.randNewWord()
-            if ans:
-                mb.showwarning("Odpowiedź", "To poprawna odpowiedź!")
+            if len(logic.formatted_base) == 0:
+                logic.stopTimer()
+                def createToplevel():
+                    self.window = ctk.CTkToplevel(self)
+                    self.window.grab_set()
+                    self.window.geometry("400x200")
+                    self.window.title("")
+
+                    napis = ctk.CTkLabel(self.window,text="Liczba poprawnych odpowiedzi" + str(logic.number_of_guessed) + '/' + str(logic.number_of_words))
+                    napis.place(x=135,y=30)
+
+                    czas = ctk.CTkLabel(self.window,text=logic.showTime())
+                    czas.place(x=135,y=100)
+
+                    button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                                                  command=lambda: closeToplevel())
+                    button_medium.place(x=135, y=150)
+                    def closeToplevel():
+                        self.window.destroy()
+                        close_window()
+                createToplevel()
             else:
-                mb.showerror("Odpowiedź", "Niestety, jest to niepoprawna odpowiedź!")
-            updateEntries(T1,counter)
+                if ans:
+                    def createToplevel():
+                        self.window = ctk.CTkToplevel(self)
+                        self.window.grab_set()
+                        self.window.geometry("400x200")
+                        self.window.title("")
+
+                        napis = ctk.CTkLabel(self.window, text="Poprawna odpowiedź!")
+                        napis.place(x=135, y=30)
+
+                        button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                                                      command=lambda: closeToplevel())
+                        button_medium.place(x=135, y=150)
+
+                        def closeToplevel():
+                            self.window.destroy()
+
+                    createToplevel()
+                else:
+                    def createToplevel():
+                        self.window = ctk.CTkToplevel(self)
+                        self.window.grab_set()
+                        self.window.geometry("400x200")
+                        self.window.title("")
+                        self.message = ''
+
+                        if logic.learn_mode:
+                            self.message = "Poprawne tłumaczenie to " + logic.formatted_base[word_index].polish
+                        else:
+                            self.message = "Niepoprawne tłumaczenie"
+
+                        napis = ctk.CTkLabel(self.window, text=self.message)
+                        napis.place(x=135, y=30)
+
+                        button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                                                      command=lambda: closeToplevel())
+                        button_medium.place(x=135, y=150)
+
+                        def closeToplevel():
+                            self.window.destroy()
+
+                    createToplevel()
+                logic.randNewWord()
+                updateEntries(T1, counter)
+
 
         def close_window():
             logic.stopTimer()
-            print(logic.showTime())
             controller.show_frame("StartPage")
             self.update()
             logic.clearAnswers()
