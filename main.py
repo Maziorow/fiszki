@@ -17,6 +17,9 @@ db = 'jd.xlsx'
 
 difficulty_list = ["łatwy","średni","trudne"]
 
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("dark-blue")
+
 @dataclass
 class Word:
     english: str
@@ -90,7 +93,7 @@ class SampleApp(ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
         windll.shcore.SetProcessDpiAwareness(1)
 
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        self.title_font = tkfont.Font(family='Helvetica', size=72, weight="bold", slant="italic")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -131,40 +134,43 @@ class StartPage(ctk.CTkFrame):
         controller.iconbitmap("pictures/xp_uk.ico")
 
         window_width = 1024
-        window_height = 768
+        window_height = 400
         screen_width = controller.winfo_screenwidth()
         screen_height = controller.winfo_screenheight()
         center_x = int(screen_width / 2 - window_width / 2)
         center_y = int(screen_height / 2 - window_height / 2)
         controller.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
-        label = ctk.CTkLabel(self, text="Fiszki polsko-angielskie")
-        label.pack(side="top", fill="x", pady=10)
+        label = ctk.CTkLabel(self, text="Fiszki polsko-angielskie",text_font=("Bank Gothic Medium BT", 40))
+        label.place(relx=0.1,rely=0.1,relheight=0.1,relwidth=0.8)
 
-        button1 = ctk.CTkButton(self, text="Do fiszek",
+        button1 = ctk.CTkButton(self, text="Tryb nauki",
                             command=lambda: chooseDifficulty())
-        button1.pack()
+        button1.place(relx=0.01,rely=0.5,relheight=0.1,relwidth=0.3)
 
         button2 = ctk.CTkButton(self, text="Dodaj słowo",
                             command=lambda: controller.show_frame("AddWordPage"))
-        button2.pack()
+        button2.place(relx=0.69,rely=0.5,relheight=0.1,relwidth=0.3)
 
         button3 = ctk.CTkButton(self, text="Graj na wybranym poziomie trudności",
                                 command=lambda: createToplevel())
-        button3.pack()
+        button3.place(relx=0.35,rely=0.5,relheight=0.1,relwidth=0.3)
+
+        exit_button = ctk.CTkButton(self, text="Zamknij aplikację",command=lambda: exit())
+        exit_button.place(relx=0.35,rely=0.75,relheight=0.1,relwidth=0.3)
 
         def createToplevel():
             self.window = ctk.CTkToplevel(self)
             self.window.grab_set()
-            self.window.geometry("400x200")
+            self.window.geometry("400x50")
             self.window.title("Wybierz poziom trudności")
 
             button_easy = ctk.CTkButton(self.window,text="Łatwy",command=lambda: closeToplevel("łatwy",False))
-            button_easy.place(x=10,y=150)
+            button_easy.place(relx=0.01,rely=0.25,relheight=0.6,relwidth=0.3)
             button_medium = ctk.CTkButton(self.window,text="Średni",command=lambda: closeToplevel("średni",False))
-            button_medium.place(x=135, y=150)
+            button_medium.place(relx=0.35,rely=0.25,relheight=0.6,relwidth=0.3)
             button_hard = ctk.CTkButton(self.window,text="Trudny",command=lambda: closeToplevel("trudne",False))
-            button_hard.place(x=260, y=150)
+            button_hard.place(relx=0.69,rely=0.25,relheight=0.6,relwidth=0.3)
 
             def closeToplevel(diff,learn_mode):
                 chooseDifficulty(diff,learn_mode)
