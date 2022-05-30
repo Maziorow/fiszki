@@ -62,7 +62,7 @@ class Logic():
             self.current_word = 0
             if(self.learn_mode):
                 self.formatted_base.pop(self.current_word)
-                self.number_of_guessed += 1
+                #self.number_of_guessed += 1
             return False
         else:
             self.formatted_base.pop(self.current_word)
@@ -75,7 +75,7 @@ class Logic():
         else:
             return "ERROR"
     def getCounter(self):
-        return str(self.number_of_guessed)+"/"+str(self.number_of_words)
+        return "Ilość słów: "+str(self.number_of_guessed)+"/"+str(self.number_of_words)
     def startTimer(self):
         self.start_time = time.time()
     def stopTimer(self):
@@ -197,21 +197,26 @@ class PageOne(ctk.CTkFrame):
         self.controller = controller
         button = ctk.CTkButton(self, text="Powrót do głównego menu",
                            command=lambda: close_window())
-        button.pack()
+        button.place(relx=0.4,rely=0.89,relheight=0.1,relwidth=0.2)
 
-        self.T1 = ctk.CTkEntry(self, height=1, width=200)
+        self.T1 = ctk.CTkEntry(self, height=1, width=200,fg_color="#D3D3D3",text_color="#000000",corner_radius=8)
         self.T1.insert(ctk.END, str(logic.getCurrentWord()))
         self.T1.config(state='disable')
-        self.T1.place(x=50, y=378)
+        self.T1.place(relx=0.15,rely=0.6,relheight=0.05,relwidth=0.3)
 
-        T2 = ctk.CTkEntry(self, height=1, width=200)
-        T2.place(x=800, y=378)
+        T2 = ctk.CTkEntry(self, height=1, width=200,fg_color="#D3D3D3",text_color="#000000",corner_radius=8)
+        T2.place(relx=0.55,rely=0.6,relheight=0.05,relwidth=0.3)
+
+        translate = ctk.CTkLabel(self,text="Tłumaczenie")
+        translate.place(relx=0.55,rely=0.45,relheight=0.1,relwidth=0.3)
 
         button2 = ctk.CTkButton(self, text="Sprawdź odpowiedź", width=25, command=lambda: checkAnswer(self.T1,self.counter))
-        button2.place(x=500, y=450)
+        button2.place(relx=0.4,rely=0.78,relheight=0.1,relwidth=0.2)
 
-        self.counter = ctk.CTkLabel(self,text=logic.getCounter())
-        self.counter.place(x=300,y=100)
+
+        self.counter = ctk.CTkLabel(self,text=logic.getCounter(),text_font=("Arial", 20))
+        self.counter.place(relx=0.35,rely=0.15,relheight=0.1,relwidth=0.3)
+
 
         def updateEntries(T1,counter):
             T1.config(state='normal')
@@ -222,9 +227,17 @@ class PageOne(ctk.CTkFrame):
             T2.insert(ctk.END, '')
             counter.config(text=logic.getCounter())
 
+        def clearEntries(T1,counter):
+            T1.config(state='normal')
+            T1.delete("0", "end")
+            T1.insert(ctk.END, "")
+            T1.config(state='disable')
+            T2.delete("0", "end")
+            T2.insert(ctk.END, '')
+            counter.config(text=logic.getCounter())
+
         def checkAnswer(T1,counter):
             word_index = logic.current_word
-            print(word_index)
             ans = logic.checkAnswer(T2.get())
             if len(logic.formatted_base) == 0:
                 logic.stopTimer()
@@ -234,19 +247,20 @@ class PageOne(ctk.CTkFrame):
                     self.window.geometry("400x200")
                     self.window.title("")
 
-                    napis = ctk.CTkLabel(self.window,text="Liczba poprawnych odpowiedzi" + str(logic.number_of_guessed) + '/' + str(logic.number_of_words))
-                    napis.place(x=135,y=30)
+                    napis = ctk.CTkLabel(self.window,text="Liczba poprawnych odpowiedzi " + str(logic.number_of_guessed) + '/' + str(logic.number_of_words))
+                    napis.place(relx=0.15,rely=0.2,relheight=0.1,relwidth=0.7)
 
-                    czas = ctk.CTkLabel(self.window,text=logic.showTime())
-                    czas.place(x=135,y=100)
+                    czas = ctk.CTkLabel(self.window,text="Czas rozwiązania: " + logic.showTime())
+                    czas.place(relx=0.15,rely=0.32,relheight=0.1,relwidth=0.7)
 
-                    button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                    button_medium = ctk.CTkButton(self.window, text="Wróc do menu",
                                                   command=lambda: closeToplevel())
-                    button_medium.place(x=135, y=150)
+                    button_medium.place(relx=0.15,rely=0.82,relheight=0.1,relwidth=0.7)
+                    close_window()
                     def closeToplevel():
                         self.window.destroy()
-                        close_window()
                 createToplevel()
+                clearEntries(T1, counter)
             else:
                 if ans:
                     def createToplevel():
@@ -256,11 +270,11 @@ class PageOne(ctk.CTkFrame):
                         self.window.title("")
 
                         napis = ctk.CTkLabel(self.window, text="Poprawna odpowiedź!")
-                        napis.place(x=135, y=30)
+                        napis.place(relx=0.15,rely=0.2,relheight=0.1,relwidth=0.7)
 
-                        button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                        button_medium = ctk.CTkButton(self.window, text="Kontynuuj",
                                                       command=lambda: closeToplevel())
-                        button_medium.place(x=135, y=150)
+                        button_medium.place(relx=0.15,rely=0.82,relheight=0.1,relwidth=0.7)
 
                         def closeToplevel():
                             self.window.destroy()
@@ -280,11 +294,11 @@ class PageOne(ctk.CTkFrame):
                             self.message = "Niepoprawne tłumaczenie"
 
                         napis = ctk.CTkLabel(self.window, text=self.message)
-                        napis.place(x=135, y=30)
+                        napis.place(relx=0.15,rely=0.2,relheight=0.1,relwidth=0.7)
 
-                        button_medium = ctk.CTkButton(self.window, text="Idź dalej",
+                        button_medium = ctk.CTkButton(self.window, text="Kontynuuj",
                                                       command=lambda: closeToplevel())
-                        button_medium.place(x=135, y=150)
+                        button_medium.place(relx=0.15,rely=0.82,relheight=0.1,relwidth=0.7)
 
                         def closeToplevel():
                             self.window.destroy()
@@ -307,27 +321,27 @@ class AddWordPage(ctk.CTkFrame):
         self.controller = controller
         button = ctk.CTkButton(self, text="Powrót do głównego menu",
                            command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        button.place(relx=0.4,rely=0.89,relheight=0.1,relwidth=0.2)
 
         label_polish = ctk.CTkLabel(self,text="Słowo po polsku", height=1, width=30)
-        label_polish.place(x=100, y=328)
-        polish_word = ctk.CTkEntry(self, height=1, width=200)
-        polish_word.place(x=100, y=378)
+        label_polish.place(relx=0.10,rely=0.4,relheight=0.05,relwidth=0.25)
+        polish_word = ctk.CTkEntry(self, height=1, width=200,fg_color="#D3D3D3",text_color="#000000")
+        polish_word.place(relx=0.10,rely=0.6,relheight=0.1,relwidth=0.25)
 
         label_english = ctk.CTkLabel(self, text="Słowo po angielsku",height=1, width=25)
-        label_english.place(x=400, y=328)
-        english_word = ctk.CTkEntry(self, height=1, width=200)
-        english_word.place(x=400, y=378)
+        label_english.place(relx=0.375,rely=0.4,relheight=0.05,relwidth=0.25)
+        english_word = ctk.CTkEntry(self, height=1, width=200,fg_color="#D3D3D3",text_color="#000000")
+        english_word.place(relx=0.375,rely=0.6,relheight=0.1,relwidth=0.25)
 
         label_difficulty = ctk.CTkLabel(self, text="Poziom trudności", height=1, width=25)
-        label_difficulty.place(x=700, y=328)
+        label_difficulty.place(relx=0.650,rely=0.4,relheight=0.05,relwidth=0.25)
         difficulty_choice = ttk.Combobox(self,height=1,width=25,values=difficulty_list)
         difficulty_choice['state'] = 'readonly'
         difficulty_choice.insert(ctk.END,'')
-        difficulty_choice.place(x=700,y=378)
+        difficulty_choice.place(relx=0.65,rely=0.625,relheight=0.05,relwidth=0.25)
 
         add_word = ctk.CTkButton(self, text="Dodaj słowo", corner_radius=6, width=25, command=lambda: add_word(polish_word,english_word,difficulty_choice))
-        add_word.place(x=400, y=460)
+        add_word.place(relx=0.4,rely=0.78,relheight=0.1,relwidth=0.2)
 
         def add_word(pl,en,diff):
             if pl.get() and en.get() and diff.get():
@@ -338,16 +352,64 @@ class AddWordPage(ctk.CTkFrame):
                     for r in dataframe_to_rows(new_word, index=False, header=False):
                         ws.append(r)
                     wb.save("baza_slowek_polsko_angielskie.xlsx")
-                    mb.showwarning("Informacja", "Poprawnie dodano nowe słowo!")
                     pl.delete("0", 'end')
                     pl.insert(ctk.END,"")
                     en.delete("0", 'end')
                     en.insert(ctk.END,"")
                     diff.set('')
+                    def createToplevel():
+                        self.window = ctk.CTkToplevel(self)
+                        self.window.grab_set()
+                        self.window.geometry("400x200")
+                        self.window.title("")
+
+                        napis = ctk.CTkLabel(self.window, text="Dodano słowo")
+                        napis.place(relx=0.15,rely=0.2,relheight=0.1,relwidth=0.7)
+
+                        button_medium = ctk.CTkButton(self.window, text="Kontynuuj",
+                                                      command=lambda: closeToplevel())
+                        button_medium.place(relx=0.15,rely=0.82,relheight=0.1,relwidth=0.7)
+
+                        def closeToplevel():
+                            self.window.destroy()
+
+                    createToplevel()
                 except:
-                    mb.showerror("Informacja", pl.get())
+                    def createToplevel():
+                        self.window = ctk.CTkToplevel(self)
+                        self.window.grab_set()
+                        self.window.geometry("400x200")
+                        self.window.title("")
+
+                        napis = ctk.CTkLabel(self.window, text="Błąd!")
+                        napis.place(relx=0.15, rely=0.2, relheight=0.1, relwidth=0.7)
+
+                        button_medium = ctk.CTkButton(self.window, text="Kontynuuj",
+                                                      command=lambda: closeToplevel())
+                        button_medium.place(relx=0.15, rely=0.82, relheight=0.1, relwidth=0.7)
+
+                        def closeToplevel():
+                            self.window.destroy()
+
+                    createToplevel()
             else:
-                mb.showerror("Informacja", "Błąd w wprowadzaniu danych!")
+                def createToplevel():
+                    self.window = ctk.CTkToplevel(self)
+                    self.window.grab_set()
+                    self.window.geometry("400x200")
+                    self.window.title("")
+
+                    napis = ctk.CTkLabel(self.window, text="Niepoprawnie wprowadzone dane!")
+                    napis.place(relx=0.15, rely=0.2, relheight=0.1, relwidth=0.7)
+
+                    button_medium = ctk.CTkButton(self.window, text="Kontynuuj",
+                                                  command=lambda: closeToplevel())
+                    button_medium.place(relx=0.15, rely=0.82, relheight=0.1, relwidth=0.7)
+
+                    def closeToplevel():
+                        self.window.destroy()
+
+                createToplevel()
 
 
 if __name__ == "__main__":
