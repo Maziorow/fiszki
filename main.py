@@ -152,7 +152,7 @@ class StartPage(ctk.CTkFrame):
                             command=lambda: controller.show_frame("AddWordPage"))
         button2.place(relx=0.69,rely=0.5,relheight=0.1,relwidth=0.3)
 
-        button3 = ctk.CTkButton(self, text="Graj na wybranym poziomie trudności",
+        button3 = ctk.CTkButton(self, text="Sprawdź swoją wiedzę",
                                 command=lambda: createToplevel())
         button3.place(relx=0.35,rely=0.5,relheight=0.1,relwidth=0.3)
 
