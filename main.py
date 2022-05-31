@@ -12,8 +12,8 @@ from openpyxl import load_workbook
 from sys import exit
 import time
 
-#db = 'baza_slowek_polsko_angielskie.xlsx'
-db = 'jd.xlsx'
+db = 'baza_slowek_polsko_angielskie.xlsx' #main word base
+#db = 'przykład.xlsx' #word base for testing
 
 difficulty_list = ["łatwy","średni","trudne"]
 
